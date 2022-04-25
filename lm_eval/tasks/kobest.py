@@ -227,7 +227,6 @@ class HellaSwag(MultipleChoiceTask):
         return self.dataset["test"]
 
     def _process_doc(self, doc):
-        ctx = doc["ctx_a"] + " " + doc["ctx_b"].capitalize()
         out_doc = {
             "choices": [doc["ending_1"], doc["ending_2"], doc["ending_3"], doc["ending_4"]],
             "gold": int(doc['label']),

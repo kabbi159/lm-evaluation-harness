@@ -13,11 +13,11 @@ https://arxiv.org/abs/2105.09680
 """
 
 import numpy as np
-from lm_eval.base import rf, Task
+from lm_eval.base import MultipleChoiceTask, rf
 from lm_eval.metrics import macro_f1_score
 
 
-class YNAT(Task): # MultipleChoiceTask로 변환 필요
+class YNAT(MultipleChoiceTask): # MultipleChoiceTask로 변환 필요
     VERSION = 0
     DATASET_PATH = "klue"
     DATASET_NAME = "ynat"
@@ -39,21 +39,20 @@ class YNAT(Task): # MultipleChoiceTask로 변환 필요
     def validation_docs(self):
         return self.dataset["validation"]
 
+    def _process_doc(self, doc):
+
+        out_doc = {
+            "choices": ["과학", "경제", "사회", "생활", "세계", "스포츠", "정치"],
+            "gold": int(doc['label'])
+        }
+
+        return out_doc
+
     def doc_to_text(self, doc):
         return "다음 문장의 카테고리는?\n{}\n답변:".format(doc["title"])
 
     def doc_to_target(self, doc):
         return " {}".format({0: "과학", 1: "경제", 2: "사회", 3: "생활", 4: "세계", 5: "스포츠", 6: "정치"}[doc["label"]])
-
-    def construct_requests(self, doc, ctx):
-        ll_sci, _ = rf.loglikelihood(ctx, " 과학")
-        ll_eco, _ = rf.loglikelihood(ctx, " 경제")
-        ll_soc, _ = rf.loglikelihood(ctx, " 사회")
-        ll_life, _ = rf.loglikelihood(ctx, " 생활")
-        ll_wor, _ = rf.loglikelihood(ctx, " 세계")
-        ll_spo, _ = rf.loglikelihood(ctx, " 스포츠")
-        ll_pol, _ = rf.loglikelihood(ctx, " 정치")
-        return ll_sci, ll_eco, ll_soc, ll_life, ll_wor, ll_spo, ll_pol
 
     def process_results(self, doc, results):
         pred = np.argmax(results)
